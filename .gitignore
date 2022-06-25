@@ -2,4 +2,28 @@
 .Rhistory
 .RData
 .Ruserdata
-local_config.R
+# automatically generated from source files unless otherwise specified
+*.html
+*.md
+*.docx
+*.pdf
+*.doc
+*_files/
+
+# data should never get checked into git
+*.tsv
+*.csv
+*.rdata
+*.RData
+*.zip
+*.db
+*.xlsx
+*.xls
+
+# local configurations
+local_*
+
+# soft-links used by Alex
+dfshiny
+efi00
+local
