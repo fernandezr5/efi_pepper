@@ -18,6 +18,7 @@
 # Init ----
 #
 .debug <- 0;
+.seed <- 123412345;
 
 library(dplyr);
 library(rio);     # format-agnostic convenient file import
@@ -104,6 +105,7 @@ select(demog0,-1) %>% table1(~.|vs,data=.);
 
 # First, create a random cross-sectional sample from the longitudinal data
 # (i.e. one randomly selected encounter per patient)
+set.seed(.seed);
 xsdat0 <- subset(dat0,age_at_visit_days>=365.25*50 &
                    age_at_visit_days <= coalesce(age_at_death_days,Inf) &
                    medhba1c < 17) %>% group_by(patient_num) %>%
