@@ -7,7 +7,21 @@ library(dint);    # date-conversion
 #' named `inputdata` that get set in a script named `local_config.R`
 if(file.exists('local_config.R')) source('local_config.R');
 
-#' ### Create the Patient-Date crosswalk.
+# Verify that the three original raw files are still the same and try to exit
+# if they are not.
+.current_digests <- sapply(inputdata[1:3],digest::digest,file=T);
+
+if(!identical(.current_digests
+              ,c(fullsqlfile="6a16692a07c116e1559b09cbe0b92268"
+                 ,patmap="96d0fa0e6c247eb6349ef83d28d84064"
+                 ,efi="5d52569b3037d72c6e481038d931f7d9"))){
+
+  rstudioapi::restartSession(command="warning('The original raw data files seem to be corrupted! You should not proceed further. Ask Alex to restore them from backup!')");
+  stop('The original raw data files seem to be corrupted! You should not proceed further. Ask Alex to restore them from backup!');
+  NOFUNCTION();
+};
+
+#' ## Create the Patient-Date crosswalk.
 file.copy(inputdata['fullsqlfile'],fullsql<-file.path(tempdir,'fullsql.db'));
 fullsqlcon <- dbConnect(RSQLite::SQLite(), fullsql);
 deid_patdate <- dbGetQuery(fullsqlcon
