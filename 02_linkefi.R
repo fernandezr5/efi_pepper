@@ -10,6 +10,11 @@ savename <- gsub('[A-Za-z]+_[A-Za-z]+','DEID_EFI',basename(inputdata['samplecsv'
 
 #' Import the main data and the EFI mappings
 dat0 <- import(inputdata['samplecsv']);
+
+#' Columns containing nested data that takes up a lot of memory and isn't really
+#' analysis-ready
+json_cols <- names(dat0) %>% grep('_cd$|_mn$|_tf$',.,inv=T,val=T) %>% grep('^v[0-9]',.,val=T);
+
 efi <- import(inputdata['efixwalk']) %>%
   mutate(patient_num = as.character(patient_num));
 hba1c <- import(inputdata['hba1c']) %>% mutate(patient_num=as.character(patient_num));
@@ -20,6 +25,10 @@ dat2 <- left_join(dat1,efi) %>%
   left_join(hba1c[,c('patient_num','start_date','medhba1c','vfhba1c')]) %>%
   fill(medhba1c,vfhba1c,FRAIL6MO,FRAIL12MO,FRAIL24MO) %>%
   select(!any_of(c('PATIENT_IDE','patient_ide','DATE_SHIFT','date_shift','monthkey')));
-message('Saving data for analysis as ',savename);
+dat3 <- select(dat2,!any_of(json_cols));
+
+message('Saving full data as ',savename);
 export(dat2,file=savename);
+message('Saving analytic-only data as ',nojsonsavename <- gsub('^DEID_EFI_','DEID_EFI_NOJSON_',savename));
+export(dat3,file=nojsonsavename);
 
