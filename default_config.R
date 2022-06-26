@@ -11,6 +11,11 @@
 # example of what settings exist. However, the scripts will not run until you
 # do create a copy named `local_config.R`
 
+###################
+# Global Settings #
+###################
+
+cClasses <- list(character='patient_num',Date='start_date');
 
 ##################
 # Local Settings #
