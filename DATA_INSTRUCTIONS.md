@@ -212,7 +212,7 @@ it's like trying to drink ice cream through a straw.
 ## 9. Post-Processing
 
 The .csv file created by DataFinisher is a drop-in replacement for the 
-`samplecsvfile` specified in `local_config.R` (see `example_config.R` for 
+`samplecsvfile` specified in `local_config.R` (see `default_config.R` for 
 documentation). Make sure it has a name that's different from the current 
 `samplecsvfile`, copy it to the same folder as that file, comment out the 
 old path and add the new path in its place. Now run the script named 
@@ -241,7 +241,7 @@ case, the steps simplify to:
 1. `git clone git@github.com:bokov/efi_pepper.git` (recommended you first make
    your own fork of this repository and clone that)
 2. Open the resulting folder as a project in RStudio
-3. Open `example_config.R` and save it under the name `local_config.R`
+3. Open `default_config.R` and save it under the name `local_config.R`
 4. Follow the instructions in that file to edit it as necessary according to 
    where your copies of the data are located.
 5. Open `03_explore_data.R`, run it as a script, and then build it as a report
