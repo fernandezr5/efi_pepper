@@ -2,9 +2,11 @@ library(dplyr);
 library(DBI);
 library(rio);     # format-agnostic convenient file import
 library(dint);    # date-conversion
+library(digest);
 
+source('default_config.R');
 #' The local path names for the data files should be stored in a vector
-#' named `inputdata` that get set in a script named `local_config.R`
+#' named `inputdata` that gets set in a script named `local_config.R`
 if(file.exists('local_config.R')) source('local_config.R');
 
 # Verify that the three original raw files are still the same and try to exit
@@ -22,7 +24,9 @@ if(!identical(.current_digests
 };
 
 #' ## Create the Patient-Date crosswalk.
-file.copy(inputdata['fullsqlfile'],fullsql<-file.path(tempdir,'fullsql.db'));
+fullsql <- file.path(tempdir,'fullsql.db');
+if(!file.exists(fullsql) || digest::digest(fullsql,file=T) != "6a16692a07c116e1559b09cbe0b92268"){
+  file.copy(inputdata['fullsqlfile'],fullsql<-file.path(tempdir,'fullsql.db'))};
 fullsqlcon <- dbConnect(RSQLite::SQLite(), fullsql);
 deid_patdate <- dbGetQuery(fullsqlcon
                            ,'SELECT DISTINCT patient_num,start_date FROM observation_fact') %>%
