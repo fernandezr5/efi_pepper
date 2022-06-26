@@ -9,7 +9,7 @@
 *.pdf
 *.doc
 *_files/
-
+*.spin.R
 # data should never get checked into git
 *.tsv
 *.csv
@@ -19,10 +19,8 @@
 *.db
 *.xlsx
 *.xls
-
 # local configurations
 local_*
-
 # soft-links used by Alex
 dfshiny
 efi00
