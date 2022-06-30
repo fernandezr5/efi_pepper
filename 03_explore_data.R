@@ -92,8 +92,12 @@ demog0 <- group_by(dat0,patient_num,sex_cd,language_cd,race_cd) %>%
             ,EncounterMonths=length(unique(as.character(dint::as_date_ym(start_date))))
             ,across(where(is.numeric) & !starts_with('age') & !starts_with('Encounter') & !starts_with('MONTH'),~na_if(min(.x,na.rm=T),Inf),.names='Min {.col}')
             ,across(where(is.numeric) & !starts_with('age') & !starts_with('Encounter') & !starts_with('MONTH') & !starts_with('Min'),~na_if(max(.x,na.rm=T),-Inf),.names='Max {.col}')
-  ) %>% ungroup %>% mutate(Language=fct_lump_n(Language,2),vs=ifelse(is.na(AgeAtDeath),'Living','Deceased'));
-select(demog0,-1) %>% table1(~.|vs,data=.);
+            ,across(where(is.logical) & !any_of('None') & !contains('_Dgns_'),any),None=all(None)
+            ,Strata=interaction(ifelse(Metformin,'Metformin',''),ifelse(Secretagogues,'Secretagogues',''),ifelse(AnyOther,'Other',''),ifelse(None,'None',''),sep='+')
+  ) %>% ungroup %>%
+  mutate(Language=fct_lump_n(Language,2) #,vs=ifelse(is.na(AgeAtDeath),'Living','Deceased')
+         ,Strata=as.character(Strata) %>% gsub('^[+]+|[+]+$','',.) %>% gsub('[+]{2}','+',.));
+select(demog0,-1) %>% table1(~.|Strata,data=.);
 
 #' ## Visualizations
 #'
@@ -110,17 +114,30 @@ set.seed(.seed);
 xsdat0 <- subset(dat0,age_at_visit_days>=365.25*50 &
                    age_at_visit_days <= coalesce(age_at_death_days,Inf) &
                    medhba1c < 17) %>% group_by(patient_num) %>%
-  slice_sample(n=1) %>% mutate(Age=age_at_visit_days/365.25);
+  slice_sample(n=1) %>% mutate(Age=age_at_visit_days/365.25) %>%
+  left_join(demog0[,c('patient_num','Strata')]);
 
 # efi_age_plot ----
 ggplot(xsdat0,aes(x=Age,y=FRAIL6MO)) + geom_smooth() +
   geom_smooth(aes(y=FRAIL12MO),col='green') +
   geom_smooth(aes(y=FRAIL24MO),col='purple') + ylab('EFI');
 
+#' 6-Month EFI vs age, stratified by type of monotherapy.
+#+ drug_efi_age_plot
+subset(xsdat0,!grepl('[+]',Strata)) %>% ggplot(aes(x=Age,y=FRAIL6MO,col=Strata)) + geom_smooth(alpha=0.1) +
+  ylab('EFI')
+
+
 #' Change in HbA1c with age. Survivor effect?
 #+ hba1c_age_plot
 # hba1c_age_plot ----
 ggplot(xsdat0,aes(x=Age,y=medhba1c)) + geom_smooth() + ylab('HbA1c')
+
+#' Change in HbA1c with age stratified by monotherapy
+#+ drug_hba1c_age_plot
+# hba1c_age_plot ----
+subset(xsdat0,!grepl('[+]',Strata)) %>% ggplot(aes(x=Age,y=medhba1c,col=Strata)) + geom_smooth(alpha=0.1) + ylab('HbA1c')
+
 
 #' EFI vs HbA1c. Surprising that there is an inverse relationship, but again,
 #' this is not longitudinal.
@@ -129,3 +146,4 @@ ggplot(xsdat0,aes(x=Age,y=medhba1c)) + geom_smooth() + ylab('HbA1c')
 ggplot(xsdat0,aes(x=medhba1c,y=FRAIL6MO)) + geom_smooth() +
   geom_smooth(aes(y=FRAIL12MO),col='green') +
   geom_smooth(aes(y=FRAIL24MO),col='purple') + ylab('EFI') + xlab('HbA1c');
+
