@@ -37,34 +37,43 @@ fullsqlcon <- dbConnect(RSQLite::SQLite(), fullsql);
 
 #.drugwhere <- .drugnames %>% sapply(function(xx) sprintf(' name_char LIKE "%%%s%%" ',xx) %>% paste0(collapse='OR'));
 .drugsql <- .drugnames %>% unlist %>% sprintf(' name_char LIKE "%%%s%%" ',.) %>% paste0(collapse = 'OR') %>%
-  paste0('SELECT DISTINCT patient_num,cd.concept_cd,start_date,cd.name_char
-         FROM observation_fact ob
-         LEFT JOIN concept_dimension cd
-          ON ob.concept_cd = cd.concept_cd
-          AND (cd.concept_cd LIKE "NDC:%" OR cd.concept_cd LIKE "RXCUI:%")
-         AND (',.,')');
+  paste0('
+WITH q0 AS (
+  SELECT DISTINCT patient_num,cd.concept_cd,start_date,end_date,cd.name_char
+  FROM observation_fact ob
+  LEFT JOIN concept_dimension cd
+    ON ob.concept_cd = cd.concept_cd
+    AND (cd.concept_cd LIKE "NDC:%" OR cd.concept_cd LIKE "RXCUI:%")
+    AND (',.,'))
+SELECT q0.patient_num,q1.concept_cd,q0.start_date,q1.name_char
+FROM q0 LEFT JOIN q0 q1
+  ON q0.patient_num = q1.patient_num
+  AND q0.start_date BETWEEN q1.start_date AND q1.end_date
+  AND q1.name_char IS NOT NULL
+         ');
 .drugregexps <- sapply(.drugnames,paste0,collapse='|');
 
 # Local function to avoid a lot of repetitive code when searching for strings in a column
 hasString <- function(xx) substitute(any(grepl(.drugregexps[xx],name_char,ignore.case=T)));
 
 # All glucose-lowering drug ocurrences
-dat0 <- dbGetQuery(fullsqlcon,.drugsql) %>%
-  mutate(patient_num=as.character(patient_num),start_date=as.Date(start_date)) %>%
-  group_by(patient_num,start_date) %>% arrange(patient_num,start_date);
+dat0 <- dbGetQuery(fullsqlcon,.drugsql);
 dbDisconnect(fullsqlcon);
+dat0a <- mutate(dat0,patient_num=as.character(patient_num),start_date=as.Date(start_date)) %>% group_by(patient_num,start_date);
+
 
 # patient history, can be joined to main data
-dat1 <- summarise(dat0
+dat1 <- summarise(dat0a
                   ,Glinides=eval(hasString('Glinides'))
                   ,SGLT2I=eval(hasString('SGLT2I'))
                   ,DDP4I=eval(hasString('DDP4I'))
                   ,GLP1A=eval(hasString('GLP1A'))
                   ,TZD=eval(hasString('TZD'))
-                  ,AnyNonSorM = Glinides|SGLT2I|DDP4I|GLP1A|TZD
-                  ,Sulfonylureas=eval(hasString('Sulfonylureas'))
                   ,Metformin=eval(hasString('Metformin'))
+                  ,Sulfonylureas=eval(hasString('Sulfonylureas'))
+                  ,Secretagogues=Sulfonylureas|Glinides
+                  ,AnyOther=SGLT2I|DDP4I|GLP1A|TZD
+                  ,None=!Metformin & !Secretagogues & !AnyOther
 );
-
 
 export(dat1,file='DEID_GLUDRUGS.tsv');
