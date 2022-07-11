@@ -73,6 +73,8 @@ dat1 <- summarise(dat0a
                   ,Sulfonylureas=eval(hasString('Sulfonylureas'))
                   ,Secretagogues=Sulfonylureas|Glinides
                   ,AnyOther=SGLT2I|DDP4I|GLP1A|TZD
+                  ,Secretagogues_Mono=Secretagogues & !AnyOther & !Metformin
+                  ,Metformin_Mono=Metformin & !AnyOther & !Secretagogues
                   ,None=!Metformin & !Secretagogues & !AnyOther
 );
 
