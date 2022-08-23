@@ -16,6 +16,8 @@
 ###################
 
 cClasses <- list(character='patient_num',Date='start_date');
+cDrugGroups <- c('Glinides','SGLT2I','DDP4I','GLP1A','TZD','Metformin','Sulfonylureas','Secretagogues','AnyOther');
+cDrugGroupsMain <- c('Metformin','Secretagogues');
 
 ##################
 # Local Settings #
@@ -41,7 +43,7 @@ inputdata <- c(
 
   # !!PHI!! Mapping file for re-identifying patients and un-shifting encounter
   # dates for each patient
-  patmap=paste0(shared_filepath,"PHI Raw Data (do not alter)\\DATABUILDER_PAT_LIST_MAP.csv"),
+  patmap=paste0(shared_filepath,"PHI Raw Data (do not alter)\\DATABUILDER_PAT_LIST_MAP_UPDATED.tsv"),
 
   # !!PHI!! Actual frailty scores for each patient-month combo. The actual
   # EPIC IDs and real dates are used in this table.

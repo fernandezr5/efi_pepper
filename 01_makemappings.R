@@ -15,7 +15,7 @@ if(file.exists('local_config.R')) source('local_config.R');
 
 if(!identical(.current_digests
               ,c(fullsqlfile="6a16692a07c116e1559b09cbe0b92268"
-                 ,patmap="96d0fa0e6c247eb6349ef83d28d84064"
+                 ,patmap="be08a4ca7f74fcaefd9fb8e30500dd8f" # "96d0fa0e6c247eb6349ef83d28d84064"
                  ,efi="5d52569b3037d72c6e481038d931f7d9"))){
 
   rstudioapi::restartSession(command="warning('The original raw data files seem to be corrupted! You should not proceed further. Ask Alex to restore them from backup!')");
@@ -83,7 +83,9 @@ id_xwalk_patdateefi <- xwalk_patdateefi3;
   # mutate(monthkey = last_of_month(start_date - DATE_SHIFT)) %>%
   # left_join(id_efidate,by=c('PATIENT_IDE'='PAT_ID','monthkey'='MON'));
 deid_xwalk_patdateefi <- select(id_xwalk_patdateefi
-                                ,-c('PATIENT_IDE','DATE_SHIFT','monthkey'));
+                                ,-c('PATIENT_IDE','DATE_SHIFT'
+                                    ,'PATIENT_IDE_UPDATED','PAT_MRN_ID'
+                                    ,'monthkey'));
 #' ### Saving files out
 #' The below is the item that is referenced in `inputdata['efixwalk']`
 export(deid_xwalk_patdateefi,'DEID_Xwalk_PatDateEFI.tsv');
