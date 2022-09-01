@@ -25,3 +25,4 @@ local_*
 dfshiny
 efi00
 local
+*.spin.Rmd
