@@ -36,4 +36,5 @@ message('Saving full data as ',savename);
 export(dat2,file=savename);
 message('Saving analytic-only data as ',nojsonsavename <- gsub('^DEID_EFI_','DEID_EFI_NOJSON_',savename));
 export(dat3,file=nojsonsavename);
+message('Saving patient drug lookup file as PHI_GLUDRUGS_DATES.xlsx')
 
